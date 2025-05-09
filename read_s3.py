@@ -11,7 +11,8 @@ aws_access_key = os.getenv('AWS_ACCESS_KEY_ID')
 aws_secret_key = os.getenv('AWS_SECRET_ACCESS_KEY')
 aws_region = os.getenv('AWS_REGION', 'us-east-1')
 bucket_name = os.getenv('S3_BUCKET_NAME', 'aws-amazon-review')
-key = "data/beauty_personal_care_7000000_14000000.parquet"
+# key = "data/beauty_personal_care_7000000_14000000.parquet"
+key = "meta_data.parquet"
 
 # Option 1: Using pyarrow with S3FileSystem (memory efficient)
 s3fs = S3FileSystem(
