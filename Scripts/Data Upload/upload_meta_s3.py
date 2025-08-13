@@ -1,3 +1,5 @@
+'''Retrieve and upload ~1M rows of meta data and convert to parquet before uploading to S3'''
+
 from datasets import load_dataset
 import boto3, io, os, time
 import pyarrow as pa, pyarrow.parquet as pq
@@ -14,7 +16,7 @@ bucket_name     = os.getenv('S3_BUCKET_NAME', 'aws-amazon-review')
 
 # Constants
 CHUNK_SIZE  = 100_000      # records per chunk
-NUM_FILES   = 3           # how many parquet files you want ~700 MB each
+NUM_FILES   = 3           # how many parquet files/ ~700 MB each
 
 # Initialize S3 client once
 s3 = boto3.client(
@@ -24,7 +26,7 @@ s3 = boto3.client(
     region_name           = aws_region
 )
 
-# First, get a schema from a representative sample
+# data from MacAuley Lab
 print("Extracting schema from sample data...")
 ds_schema = load_dataset("McAuley-Lab/Amazon-Reviews-2023", "raw_meta_Beauty_and_Personal_Care", split="full", trust_remote_code=True)
 first_chunk = []
@@ -42,7 +44,7 @@ def process_range(s3_key):
     ds_stream = load_dataset("McAuley-Lab/Amazon-Reviews-2023", "raw_meta_Beauty_and_Personal_Care", split="full", trust_remote_code=True)
 
     buffer = io.BytesIO()
-    # Initialize writer immediately with the base schema
+    # Initialize writer with the base schema
     writer = pq.ParquetWriter(
         buffer,
         base_schema,
@@ -64,7 +66,6 @@ def process_range(s3_key):
             chunk_count += 1
             print(f"  → Wrote chunk #{chunk_count}")
     
-    # Flush any remainder
     if chunk:
         # Important: Also use the base schema here
         table = pa.Table.from_pylist(chunk, schema=base_schema)

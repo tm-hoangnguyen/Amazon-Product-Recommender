@@ -1,3 +1,5 @@
+'''Retrieve and upload ~21M rows of actual review data for Beauty and Personal Care data,
+and convert to parquet before uploading to S3'''
 from datasets import load_dataset
 import boto3, io, os, time
 import pyarrow as pa, pyarrow.parquet as pq
@@ -13,7 +15,7 @@ bucket_name     = os.getenv('S3_BUCKET_NAME', 'aws-amazon-review')
 
 # Constants
 CHUNK_SIZE  = 100_000      # records per chunk
-FILE_SIZE   = 7_000_000   # records per parquet file: 7M
+FILE_SIZE   = 7_000_000   # records per parquet file: 7M, total: 21M
 NUM_FILES   = 3           # how many parquet files you want ~700 MB each
 
 # Initialize S3 client once
@@ -26,7 +28,7 @@ s3 = boto3.client(
 
 def process_range(start_idx, end_idx, s3_key):
     """Stream records [start_idx, end_idx) and write them to S3 under s3_key."""
-    # (Re-)load the streaming dataset
+    # reload the streaming dataset
     ds_stream = load_dataset(
         "McAuley-Lab/Amazon-Reviews-2023",
         "raw_review_Beauty_and_Personal_Care",
